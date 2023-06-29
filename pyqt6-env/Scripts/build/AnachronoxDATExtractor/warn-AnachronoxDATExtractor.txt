@@ -1,0 +1,70 @@
+
+This file lists modules PyInstaller was not able to find. This does not
+necessarily mean this module is required for running your program. Python and
+Python 3rd-party packages include a lot of conditional or optional modules. For
+example the module 'ntpath' only exists on Windows, whereas the module
+'posixpath' only exists on Posix systems.
+
+Types if import:
+* top-level: imported at the top-level - look at these first
+* conditional: imported within an if-statement
+* delayed: imported within a function
+* optional: imported within a try-except-statement
+
+IMPORTANT: Do NOT post this list to the issue-tracker. Use it as a basis for
+            tracking down the missing module yourself. Thanks!
+
+missing module named pyimod02_importers - imported by C:\Python\Python310\pyqt6\pyqt6-env\Lib\site-packages\PyInstaller\hooks\rthooks\pyi_rth_pkgutil.py (delayed)
+missing module named pep517 - imported by importlib.metadata (delayed)
+missing module named 'org.python' - imported by copy (optional), xml.sax (delayed, conditional)
+missing module named org - imported by pickle (optional)
+missing module named posix - imported by os (conditional, optional), shutil (conditional), importlib._bootstrap_external (conditional)
+missing module named resource - imported by posix (top-level)
+excluded module named _frozen_importlib - imported by importlib (optional), importlib.abc (optional), zipimport (top-level)
+missing module named _frozen_importlib_external - imported by importlib._bootstrap (delayed), importlib (optional), importlib.abc (optional), zipimport (top-level)
+missing module named pwd - imported by posixpath (delayed, conditional), subprocess (delayed, conditional, optional), shutil (delayed, optional), tarfile (optional), pathlib (delayed, optional), netrc (delayed, conditional), getpass (delayed)
+missing module named _scproxy - imported by urllib.request (conditional)
+missing module named termios - imported by getpass (optional)
+missing module named grp - imported by subprocess (delayed, conditional, optional), shutil (delayed, optional), tarfile (optional), pathlib (delayed, optional)
+missing module named _posixsubprocess - imported by subprocess (optional)
+missing module named fcntl - imported by subprocess (optional)
+missing module named qdarktheme.qtpy.QtCore.QCoreApplication - imported by qdarktheme.qtpy.QtCore (delayed, optional), qdarktheme._style_loader (delayed, optional), qdarktheme._os_appearance.listener (top-level), qdarktheme._main (delayed)
+missing module named qdarktheme.qtpy.QtCore.QThread - imported by qdarktheme.qtpy.QtCore (top-level), qdarktheme._os_appearance.listener (top-level)
+missing module named qdarktheme.qtpy.QtCore.QObject - imported by qdarktheme.qtpy.QtCore (top-level), qdarktheme._os_appearance.listener (top-level)
+missing module named qdarktheme.qtpy.QtCore.QEvent - imported by qdarktheme.qtpy.QtCore (top-level), qdarktheme._os_appearance.listener (top-level)
+missing module named qdarktheme.qtpy.QtCore.Qt - imported by qdarktheme.qtpy.QtCore (top-level), qdarktheme._icon.icon_engine (top-level), qdarktheme._main (delayed)
+missing module named qdarktheme.qtpy.QtCore.QSize - imported by qdarktheme.qtpy.QtCore (top-level), qdarktheme._icon.icon_engine (top-level)
+missing module named qdarktheme.qtpy.QtCore.QRectF - imported by qdarktheme.qtpy.QtCore (top-level), qdarktheme._icon.icon_engine (top-level)
+missing module named qdarktheme.qtpy.QtCore.QRect - imported by qdarktheme.qtpy.QtCore (top-level), qdarktheme._icon.icon_engine (top-level)
+missing module named qdarktheme.qtpy.QtCore.QPoint - imported by qdarktheme.qtpy.QtCore (top-level), qdarktheme._icon.icon_engine (top-level)
+missing module named qdarktheme.qtpy.QtWidgets.QStyleOption - imported by qdarktheme.qtpy.QtWidgets (top-level), qdarktheme._proxy_style (top-level)
+missing module named qdarktheme.qtpy.QtWidgets.QProxyStyle - imported by qdarktheme.qtpy.QtWidgets (top-level), qdarktheme._proxy_style (top-level)
+missing module named qdarktheme.qtpy.QtWidgets.QStyle - imported by qdarktheme.qtpy.QtWidgets (top-level), qdarktheme._resources.standard_icons (top-level), qdarktheme._proxy_style (top-level)
+missing module named 'PySide2.QtWidgets' - imported by qdarktheme.qtpy.QtGui (conditional), qdarktheme.qtpy.QtWidgets (conditional)
+missing module named 'PyQt5.QtWidgets' - imported by qdarktheme.qtpy.QtGui (conditional), qdarktheme.qtpy.QtWidgets (conditional)
+missing module named 'PySide6.QtWidgets' - imported by qdarktheme.qtpy.QtWidgets (conditional)
+missing module named qdarktheme.qtpy.QtSvg.QSvgRenderer - imported by qdarktheme.qtpy.QtSvg (top-level), qdarktheme._icon.icon_engine (top-level)
+missing module named 'PySide2.QtSvg' - imported by qdarktheme.qtpy.QtSvg (conditional)
+missing module named 'PyQt5.QtSvg' - imported by qdarktheme.qtpy.QtSvg (conditional)
+missing module named 'PySide6.QtSvg' - imported by qdarktheme.qtpy.QtSvg (conditional)
+missing module named qdarktheme.qtpy.QtGui.QPixmap - imported by qdarktheme.qtpy.QtGui (top-level), qdarktheme._icon.icon_engine (top-level)
+missing module named qdarktheme.qtpy.QtGui.QPainter - imported by qdarktheme.qtpy.QtGui (top-level), qdarktheme._icon.icon_engine (top-level)
+missing module named qdarktheme.qtpy.QtGui.QImage - imported by qdarktheme.qtpy.QtGui (top-level), qdarktheme._icon.icon_engine (top-level)
+missing module named qdarktheme.qtpy.QtGui.QIconEngine - imported by qdarktheme.qtpy.QtGui (top-level), qdarktheme._icon.icon_engine (top-level)
+missing module named qdarktheme.qtpy.QtGui.QIcon - imported by qdarktheme.qtpy.QtGui (top-level), qdarktheme._icon.icon_engine (top-level), qdarktheme._proxy_style (top-level)
+missing module named qdarktheme.qtpy.QtGui.QGuiApplication - imported by qdarktheme.qtpy.QtGui (top-level), qdarktheme._icon.icon_engine (top-level), qdarktheme._main (delayed)
+missing module named qdarktheme.qtpy.QtGui.QPalette - imported by qdarktheme.qtpy.QtGui (delayed), qdarktheme._resources.palette (delayed), qdarktheme._icon.icon_engine (top-level)
+missing module named qdarktheme.qtpy.QtGui.QColor - imported by qdarktheme.qtpy.QtGui (delayed), qdarktheme._resources.palette (delayed)
+missing module named 'PySide2.QtGui' - imported by qdarktheme.qtpy.QtGui (conditional)
+missing module named 'PyQt5.QtGui' - imported by qdarktheme.qtpy.QtGui (conditional)
+missing module named 'PySide6.QtGui' - imported by qdarktheme.qtpy.QtGui (conditional)
+missing module named PySide2 - imported by qdarktheme.qtpy.qt_version (conditional)
+missing module named PyQt5 - imported by qdarktheme.qtpy.qt_version (conditional)
+missing module named PySide6 - imported by qdarktheme.qtpy.qt_version (conditional)
+missing module named 'PySide2.QtCore' - imported by qdarktheme.qtpy.QtCore (conditional)
+missing module named 'PyQt5.QtCore' - imported by qdarktheme.qtpy.QtCore (conditional)
+missing module named 'PySide6.QtCore' - imported by qdarktheme.qtpy.QtCore (conditional)
+missing module named vms_lib - imported by platform (delayed, optional)
+missing module named 'java.lang' - imported by platform (delayed, optional), xml.sax._exceptions (conditional)
+missing module named java - imported by platform (delayed)
+missing module named _winreg - imported by platform (delayed, optional)
