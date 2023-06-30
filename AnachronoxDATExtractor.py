@@ -1,5 +1,5 @@
 import PyQt6
-from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow , QStyleFactory, QMessageBox, QTextEdit, QComboBox, QLineEdit, QComboBox, QScrollBar, QFileDialog
+from PyQt6.QtWidgets import QApplication, QWidget, QMessageBox, QTextEdit, QComboBox, QLineEdit, QScrollBar, QFileDialog
 from PyQt6 import uic
 
 import qdarktheme
@@ -69,6 +69,90 @@ def load_dat_header(self, file_bytes):
 
 
 
+def get_all_files(dat_file):
+    pass
+
+
+def extract_all_files(dat_file_bytes, dat_file_header, number_of_files, output_folder, ui_object):
+    try:
+        # Get the actual files
+        file_info_bytes = dat_file_bytes[dat_file_header.file_info_position : dat_file_header.file_info_position + dat_file_header.file_info_length]
+        for i in range(number_of_files):
+            start_pos = i * 144
+            # print(file_info_bytes[start_pos + 128 : start_pos + 144])
+
+
+            file_name = file_info_bytes[start_pos : start_pos + 128].decode("ascii","ignore").strip()
+            metadata = struct.unpack("<LLLL", file_info_bytes[start_pos + 128 : start_pos + 144])
+
+            # print(f"File {i}: Start pos: {start_pos}, metadata:\n{metadata}")
+
+            file_start_pos = metadata[0]
+            file_length = metadata[1]
+            compressed_file_size = metadata[2]
+            checksum_unknown = metadata[3]
+
+            
+            # print(f"File start pos: {file_start_pos}")
+            # print(f"File size: {file_length}")
+            # print(f"Compressed size: {compressed_file_size}")
+            # print(f"Checksum: {checksum_unknown}")
+
+
+            # If the file is compressed
+            if compressed_file_size > 0:
+                print(f"Decompressing/Writing: {file_name}, start position: {file_start_pos}, length: {file_length}, compressed size: {compressed_file_size}, checksum: {checksum_unknown}")
+                this_file_bytes = dat_file_bytes[file_start_pos : file_start_pos + compressed_file_size]
+                
+                decompressed_file = zlib.decompress(this_file_bytes)
+
+                output_path = os.path.join(output_folder, file_name)
+                output_path = ''.join(x for x in output_path if x.isprintable())
+                
+                output_directory = os.path.dirname(output_path)
+                if not os.path.exists(output_directory):
+                    print("MAKING DIRECTORY!")
+                    print(output_directory)
+                    os.makedirs(output_directory)
+                
+                
+                output_file = open(output_path, 'wb')
+                output_file.write(decompressed_file)
+                output_file.close()
+
+            # If not compressed
+            else:
+                print(f"Writing (Uncompressed): {file_name}, start position: {file_start_pos}, length: {file_length}, compressed size: {compressed_file_size}, checksum: {checksum_unknown}")
+                
+                this_file_bytes = dat_file_bytes[file_start_pos : file_start_pos + file_length]
+
+                output_path = os.path.join(output_folder, file_name)
+                output_path = ''.join(x for x in output_path if x.isprintable())
+                
+                output_directory = os.path.dirname(output_path)
+                if not os.path.exists(output_directory):
+                    print("MAKING DIRECTORY!")
+                    print(output_directory)
+                    os.makedirs(output_directory)
+
+
+                output_file = open(output_path, 'wb')
+                output_file.write(this_file_bytes)
+                output_file.close()
+
+        msg_box = QMessageBox(ui_object)
+        msg_box.setWindowTitle("Complete")
+        msg_box.setText("Extraction Complete!")
+        msg_box.show()
+
+
+    except Exception as argument:
+        msg_box = QMessageBox(ui_object)
+        msg_box.setWindowTitle("ERROR")
+        msg_box.setText("Error extracting .DAT file:\n{argument}")
+        msg_box.show()
+        return
+
 
 
 
@@ -81,121 +165,49 @@ class AnachronoxDATApp(QWidget):
         ### BUTTON EVENTS ###
         self.ui.btn_select_dat_file.clicked.connect(self.select_file)
         self.ui.btn_select_output_folder.clicked.connect(self.select_output_folder)
-
+        self.ui.btn_extract_all.clicked.connect(self.extract_all)
 
 
     def select_file(self):
-        try:
-            output_folder = self.ui.txt_output_folder.text()
+        
+        output_folder = self.ui.txt_output_folder.text()
 
-            if not os.path.exists(output_folder):
-                msg_box = QMessageBox(self)
-                msg_box.setWindowTitle("Output Folder Error")
-                msg_box.setText("ERROR: Selected Output folder does not exist")
-                msg_box.show()
-                return
-
-            file_name = QFileDialog.getOpenFileName(caption = "Select .dat file", filter = "*.dat")[0]
-            print(f"File Name: {file_name}")
-            
-            if file_name != '' and file_name is not None:
-                dat_file_bytes = load_file_bytes(file_name)
-                dat_file_header = load_dat_header(self, dat_file_bytes)
-                
-                if dat_file_header == -1:
-                    print("Invalid DAT, aborting...")
-                    return
-
-
-                print("--------------- HEADER VALUES -------------------")
-                for field in fields(dat_file_header):
-                    print(f"{field.name} - ", getattr(dat_file_header, field.name))
-
-                print("--------------------------------------------------")
-
-            
-
-                number_of_files = int(dat_file_header.file_info_length / 144)
-                print (f"{number_of_files} files in DAT")
-
-
-                # Get the actual files
-                file_info_bytes = dat_file_bytes[dat_file_header.file_info_position : dat_file_header.file_info_position + dat_file_header.file_info_length]
-                for i in range(number_of_files):
-                    start_pos = i * 144
-                    # print(file_info_bytes[start_pos + 128 : start_pos + 144])
-
-
-                    file_name = file_info_bytes[start_pos : start_pos + 128].decode("ascii","ignore").strip()
-                    metadata = struct.unpack("<iiii", file_info_bytes[start_pos + 128 : start_pos + 144])
-
-                    # print(f"File {i}: Start pos: {start_pos}, metadata:\n{metadata}")
-
-                    file_start_pos = metadata[0]
-                    file_length = metadata[1]
-                    compressed_file_size = metadata[2]
-                    checksum_unknown = metadata[3]
-
-                    
-                    # print(f"File start pos: {file_start_pos}")
-                    # print(f"File size: {file_length}")
-                    # print(f"Compressed size: {compressed_file_size}")
-                    # print(f"Checksum: {checksum_unknown}")
-
-
-                    # If the file is compressed
-                    if compressed_file_size > 0:
-                        print(f"Decompressing/Writing: {file_name}, start position: {file_start_pos}, length: {file_length}, compressed size: {compressed_file_size}, checksum: {checksum_unknown}")
-                        this_file_bytes = dat_file_bytes[file_start_pos : file_start_pos + compressed_file_size]
-                        
-                        decompressed_file = zlib.decompress(this_file_bytes)
-
-                        output_path = os.path.join(output_folder, file_name)
-                        output_path = ''.join(x for x in output_path if x.isprintable())
-                        
-                        output_directory = os.path.dirname(output_path)
-                        if not os.path.exists(output_directory):
-                            print("MAKING DIRECTORY!")
-                            print(output_directory)
-                            os.makedirs(output_directory)
-                        
-                        
-                        output_file = open(output_path, 'wb')
-                        output_file.write(decompressed_file)
-                        output_file.close()
-
-                    # If not compressed
-                    else:
-                        print(f"Writing (Uncompressed): {file_name}, start position: {file_start_pos}, length: {file_length}, compressed size: {compressed_file_size}, checksum: {checksum_unknown}")
-                        
-                        this_file_bytes = dat_file_bytes[file_start_pos : file_start_pos + file_length]
-
-                        output_path = os.path.join(output_folder, file_name)
-                        output_path = ''.join(x for x in output_path if x.isprintable())
-                        
-                        output_directory = os.path.dirname(output_path)
-                        if not os.path.exists(output_directory):
-                            print("MAKING DIRECTORY!")
-                            print(output_directory)
-                            os.makedirs(output_directory)
-
-
-                        output_file = open(output_path, 'wb')
-                        output_file.write(this_file_bytes)
-                        output_file.close()
-
-                msg_box = QMessageBox(self)
-                msg_box.setWindowTitle("Complete")
-                msg_box.setText("Extraction Complete!")
-                msg_box.show()
-
-
-        except Exception as argument:
+        if not os.path.exists(output_folder):
             msg_box = QMessageBox(self)
-            msg_box.setWindowTitle("ERROR")
-            msg_box.setText("Error extracting .DAT file:\n{argument}")
+            msg_box.setWindowTitle("Output Folder Error")
+            msg_box.setText("ERROR: Selected Output folder does not exist")
             msg_box.show()
             return
+
+        file_name = QFileDialog.getOpenFileName(caption = "Select .dat file", filter = "*.dat")[0]
+        print(f"File Name: {file_name}")
+        
+        if file_name != '' and file_name is not None:
+            dat_file_bytes = load_file_bytes(file_name)
+            dat_file_header = load_dat_header(self, dat_file_bytes)
+            
+            if dat_file_header == -1:
+                print("Invalid DAT, aborting...")
+                return
+
+            
+            # Populate UI w/ file name
+            self.ui.txt_dat_file.setText(file_name)
+
+
+            print("--------------- HEADER VALUES -------------------")
+            for field in fields(dat_file_header):
+                print(f"{field.name} - ", getattr(dat_file_header, field.name))
+
+            print("--------------------------------------------------")
+
+        
+
+            number_of_files = int(dat_file_header.file_info_length / 144)
+            print (f"{number_of_files} files in DAT")
+
+
+                
 
 
     def select_output_folder(self):
@@ -211,10 +223,26 @@ class AnachronoxDATApp(QWidget):
             return
 
 
+    def extract_all(self):
+        file = load_file_bytes(self.ui.txt_dat_file.text())
+        header = load_dat_header(self, file)
+        number_of_files = int(header.file_info_length / 144)
+        output_folder = self.ui.txt_output_folder.text()
+
+        if not os.path.exists(output_folder) or not os.path.isfile(self.ui.txt_dat_file.text()):
+            msg_box = QMessageBox(self)
+            msg_box.setWindowTitle("Extract Error")
+            msg_box.setText("ERROR: Folder or file no longer exist.")
+            msg_box.show()
+            return
+        
+        extract_all_files(file, header, number_of_files, output_folder, self)
+
+
 
 if __name__ == '__main__':
     # Prints out the themes available
-    print(QStyleFactory.keys())
+    # print(QStyleFactory.keys())
 
     user_login_name = os.getlogin()
     # print(user_login_name)
