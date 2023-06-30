@@ -284,6 +284,13 @@ class AnachronoxDATApp(QWidget):
     def extract_selected(self):
         selected_file = self.ui.lst_files.currentItem().text()
 
+        if selected_file is None or selected_file = '':
+            msg_box = QMessageBox(self)
+            msg_box.setWindowTitle("Error")
+            msg_box.setText("Please select a file first.")
+            msg_box.show()
+            return
+
         global dat_file_dictionary
         file_info = dat_file_dictionary[selected_file]
 
