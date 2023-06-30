@@ -152,7 +152,7 @@
     <string/>
    </property>
    <property name="pixmap">
-    <pixmap>../../Users/q/Art/Anachronox/PAL/BallotinePAL1_square_crop.png</pixmap>
+    <pixmap>BallotinePAL1_square_crop.png</pixmap>
    </property>
    <property name="scaledContents">
     <bool>true</bool>
