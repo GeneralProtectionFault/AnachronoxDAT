@@ -1,5 +1,5 @@
 import PyQt6
-from PyQt6.QtWidgets import QApplication, QWidget, QMessageBox, QTextEdit, QComboBox, QLineEdit, QScrollBar, QFileDialog
+from PyQt6.QtWidgets import QApplication, QWidget, QMessageBox, QTextEdit, QComboBox, QLineEdit, QScrollBar, QFileDialog, QListWidget
 from PyQt6 import uic
 
 import qdarktheme
@@ -11,6 +11,7 @@ import io
 import zlib
 import shutil
 from glob import glob
+import json
 
 import struct
 from dataclasses import dataclass, fields
@@ -36,7 +37,18 @@ class anox_dat_file_header:
     version: int # Always 9, possibly a version of some sort used by the Anachronox team, and we would never see 1-8 in the released product, for example.
 
 
+@dataclass
+class anox_dat_file:
+    file_name: str
+    start_position: int
+    length: int
+    compressed_length: int
+    checksum: int
 
+
+
+
+dat_file_dictionary = dict()
 
 
 
@@ -69,8 +81,72 @@ def load_dat_header(self, file_bytes):
 
 
 
-def get_all_files(dat_file):
-    pass
+def populate_file_list(ui_object, dat_file_bytes, dat_file_header, number_of_files):
+    global dat_file_dictionary
+    dat_file_dictionary.clear()
+    ui_object.ui.lst_files.clear()
+
+    file_info_bytes = dat_file_bytes[dat_file_header.file_info_position : dat_file_header.file_info_position + dat_file_header.file_info_length]
+    for i in range(number_of_files):
+        start_pos = i * 144
+        # print(file_info_bytes[start_pos + 128 : start_pos + 144])
+
+
+        file_name = file_info_bytes[start_pos : start_pos + 128].decode("ascii","ignore").rstrip('\x00')
+        metadata = struct.unpack("<LLLL", file_info_bytes[start_pos + 128 : start_pos + 144])
+        
+        file_data = (file_name,) + metadata
+
+        dat_file = anox_dat_file(*file_data)
+
+        # Add to dictionary
+        dat_file_dictionary[file_name] = dat_file.__dict__
+
+        # Add to UI list
+        ui_object.ui.lst_files.addItem(file_name)
+
+
+
+
+def write_file(dat_file_bytes, dat_file, output_folder, file_name):
+    print(f"Writing (Uncompressed): {file_name}, start position: {getattr(dat_file, 'start_position')}, length: {getattr(dat_file, 'length')}, compressed size: {getattr(dat_file, 'compressed_length')}, checksum: {getattr(dat_file, 'checksum')}")
+                
+    this_file_bytes = dat_file_bytes[getattr(dat_file, 'start_position') : getattr(dat_file, 'start_position') + getattr(dat_file, 'length')]
+
+    output_path = os.path.join(output_folder, file_name)
+    output_path = ''.join(x for x in output_path if x.isprintable())
+    
+    output_directory = os.path.dirname(output_path)
+    if not os.path.exists(output_directory):
+        print("MAKING DIRECTORY!")
+        print(output_directory)
+        os.makedirs(output_directory)
+
+
+    output_file = open(output_path, 'wb')
+    output_file.write(this_file_bytes)
+    output_file.close()
+
+
+def write_compressed_file(dat_file_bytes, dat_file, output_folder, file_name):
+    print(f"Decompressing/Writing: {file_name}, start position: {getattr(dat_file, 'start_position')}, length: {getattr(dat_file, 'length')}, compressed size: {getattr(dat_file, 'compressed_length')}, checksum: {getattr(dat_file, 'checksum')}")
+    this_file_bytes = dat_file_bytes[getattr(dat_file, 'start_position') : getattr(dat_file, 'start_position') + getattr(dat_file, 'compressed_length')]
+    
+    decompressed_file = zlib.decompress(this_file_bytes)
+
+    output_path = os.path.join(output_folder, file_name)
+    output_path = ''.join(x for x in output_path if x.isprintable())
+    
+    output_directory = os.path.dirname(output_path)
+    if not os.path.exists(output_directory):
+        print("MAKING DIRECTORY!")
+        print(output_directory)
+        os.makedirs(output_directory)
+    
+    
+    output_file = open(output_path, 'wb')
+    output_file.write(decompressed_file)
+    output_file.close()
 
 
 def extract_all_files(dat_file_bytes, dat_file_header, number_of_files, output_folder, ui_object):
@@ -82,63 +158,23 @@ def extract_all_files(dat_file_bytes, dat_file_header, number_of_files, output_f
             # print(file_info_bytes[start_pos + 128 : start_pos + 144])
 
 
-            file_name = file_info_bytes[start_pos : start_pos + 128].decode("ascii","ignore").strip()
+            file_name = file_info_bytes[start_pos : start_pos + 128].decode("ascii","ignore").rstrip('\x00')
             metadata = struct.unpack("<LLLL", file_info_bytes[start_pos + 128 : start_pos + 144])
-
+            
+            file_data = (file_name,) + metadata
             # print(f"File {i}: Start pos: {start_pos}, metadata:\n{metadata}")
 
-            file_start_pos = metadata[0]
-            file_length = metadata[1]
-            compressed_file_size = metadata[2]
-            checksum_unknown = metadata[3]
 
-            
-            # print(f"File start pos: {file_start_pos}")
-            # print(f"File size: {file_length}")
-            # print(f"Compressed size: {compressed_file_size}")
-            # print(f"Checksum: {checksum_unknown}")
-
+            dat_file = anox_dat_file(*file_data)
 
             # If the file is compressed
-            if compressed_file_size > 0:
-                print(f"Decompressing/Writing: {file_name}, start position: {file_start_pos}, length: {file_length}, compressed size: {compressed_file_size}, checksum: {checksum_unknown}")
-                this_file_bytes = dat_file_bytes[file_start_pos : file_start_pos + compressed_file_size]
-                
-                decompressed_file = zlib.decompress(this_file_bytes)
-
-                output_path = os.path.join(output_folder, file_name)
-                output_path = ''.join(x for x in output_path if x.isprintable())
-                
-                output_directory = os.path.dirname(output_path)
-                if not os.path.exists(output_directory):
-                    print("MAKING DIRECTORY!")
-                    print(output_directory)
-                    os.makedirs(output_directory)
-                
-                
-                output_file = open(output_path, 'wb')
-                output_file.write(decompressed_file)
-                output_file.close()
+            if getattr(dat_file, 'compressed_length') > 0:
+                write_compressed_file(dat_file_bytes, dat_file, output_folder, file_name)
 
             # If not compressed
             else:
-                print(f"Writing (Uncompressed): {file_name}, start position: {file_start_pos}, length: {file_length}, compressed size: {compressed_file_size}, checksum: {checksum_unknown}")
-                
-                this_file_bytes = dat_file_bytes[file_start_pos : file_start_pos + file_length]
+                write_file(dat_file_bytes, dat_file, output_folder, file_name)
 
-                output_path = os.path.join(output_folder, file_name)
-                output_path = ''.join(x for x in output_path if x.isprintable())
-                
-                output_directory = os.path.dirname(output_path)
-                if not os.path.exists(output_directory):
-                    print("MAKING DIRECTORY!")
-                    print(output_directory)
-                    os.makedirs(output_directory)
-
-
-                output_file = open(output_path, 'wb')
-                output_file.write(this_file_bytes)
-                output_file.close()
 
         msg_box = QMessageBox(ui_object)
         msg_box.setWindowTitle("Complete")
@@ -149,7 +185,7 @@ def extract_all_files(dat_file_bytes, dat_file_header, number_of_files, output_f
     except Exception as argument:
         msg_box = QMessageBox(ui_object)
         msg_box.setWindowTitle("ERROR")
-        msg_box.setText("Error extracting .DAT file:\n{argument}")
+        msg_box.setText(f"Error extracting .DAT file:\n{argument}")
         msg_box.show()
         return
 
@@ -166,10 +202,12 @@ class AnachronoxDATApp(QWidget):
         self.ui.btn_select_dat_file.clicked.connect(self.select_file)
         self.ui.btn_select_output_folder.clicked.connect(self.select_output_folder)
         self.ui.btn_extract_all.clicked.connect(self.extract_all)
+        self.ui.btn_extract_selected.clicked.connect(self.extract_selected)
+
+
 
 
     def select_file(self):
-        
         output_folder = self.ui.txt_output_folder.text()
 
         if not os.path.exists(output_folder):
@@ -194,6 +232,10 @@ class AnachronoxDATApp(QWidget):
             # Populate UI w/ file name
             self.ui.txt_dat_file.setText(file_name)
 
+            number_of_files = int(dat_file_header.file_info_length / 144)
+            print (f"{number_of_files} files in DAT")
+
+            populate_file_list(self, dat_file_bytes, dat_file_header, number_of_files)
 
             print("--------------- HEADER VALUES -------------------")
             for field in fields(dat_file_header):
@@ -203,8 +245,7 @@ class AnachronoxDATApp(QWidget):
 
         
 
-            number_of_files = int(dat_file_header.file_info_length / 144)
-            print (f"{number_of_files} files in DAT")
+            
 
 
                 
@@ -237,6 +278,33 @@ class AnachronoxDATApp(QWidget):
             return
         
         extract_all_files(file, header, number_of_files, output_folder, self)
+
+
+
+    def extract_selected(self):
+        selected_file = self.ui.lst_files.currentItem().text()
+
+        global dat_file_dictionary
+        file_info = dat_file_dictionary[selected_file]
+
+        # Convert dictionary back to class
+        dat_file = anox_dat_file(None, None, None, None, None)
+        for key in file_info:
+            setattr(dat_file, key, file_info[key])
+
+        #print(dat_file)
+
+        dat_file_bytes = load_file_bytes(self.ui.txt_dat_file.text())
+        if getattr(dat_file, "compressed_length") > 0:
+            write_compressed_file(dat_file_bytes, dat_file, self.ui.txt_output_folder.text(), getattr(dat_file, "file_name"))
+        else:
+            write_file(dat_file_bytes, dat_file, self.ui.txt_output_folder.text(), getattr(dat_file, "file_name"))
+
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle("Complete")
+        msg_box.setText("File Extracted!")
+        msg_box.show()
+
 
 
 

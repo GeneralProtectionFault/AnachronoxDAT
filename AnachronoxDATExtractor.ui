@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1028</width>
-    <height>700</height>
+    <width>1127</width>
+    <height>812</height>
    </rect>
   </property>
   <property name="font">
@@ -21,8 +21,8 @@
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>250</x>
-     <y>60</y>
+     <x>320</x>
+     <y>110</y>
      <width>571</width>
      <height>72</height>
     </rect>
@@ -53,22 +53,12 @@
     </item>
    </layout>
   </widget>
-  <widget class="QListView" name="lst_files">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>350</y>
-     <width>991</width>
-     <height>192</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QWidget" name="verticalLayoutWidget_2">
    <property name="geometry">
     <rect>
-     <x>180</x>
-     <y>150</y>
-     <width>681</width>
+     <x>320</x>
+     <y>200</y>
+     <width>571</width>
      <height>91</height>
     </rect>
    </property>
@@ -82,7 +72,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Select DAT File (Confirmation on DAT file will commence extraction to the selected folder)</string>
+       <string>Select DAT File</string>
       </property>
      </widget>
     </item>
@@ -104,9 +94,9 @@
   <widget class="QPushButton" name="btn_extract_all">
    <property name="geometry">
     <rect>
-     <x>390</x>
-     <y>270</y>
-     <width>271</width>
+     <x>480</x>
+     <y>720</y>
+     <width>261</width>
      <height>41</height>
     </rect>
    </property>
@@ -118,6 +108,54 @@
    </property>
    <property name="text">
     <string>Extract ALL Files</string>
+   </property>
+  </widget>
+  <widget class="QListWidget" name="lst_files">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>310</y>
+     <width>571</width>
+     <height>321</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_extract_selected">
+   <property name="geometry">
+    <rect>
+     <x>460</x>
+     <y>650</y>
+     <width>291</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Segoe UI</family>
+     <pointsize>21</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Extract Selected File</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>110</y>
+     <width>261</width>
+     <height>261</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="pixmap">
+    <pixmap>../../Users/q/Art/Anachronox/PAL/BallotinePAL1_square_crop.png</pixmap>
+   </property>
+   <property name="scaledContents">
+    <bool>true</bool>
    </property>
   </widget>
  </widget>
