@@ -7,6 +7,7 @@ import qdarktheme
 
 import sys
 import os
+from pathlib import Path
 import io
 import zlib
 import shutil
@@ -33,7 +34,7 @@ class anox_dat_file_header:
     # This is the offset which has information about the file (see below). This offset and 144 bytes thereafter contain that information.
     # A .dat file will typically have multiple files.  So, ever 144 bytes, this information is repeated for each file
     file_info_position: int
-    file_info_length: int # The number of bytes that comprise the file info section at the ned of the file (divide by 144 to get the number of files)
+    file_info_length: int # The number of bytes that comprise the file info section at the end of the file (divide by 144 to get the number of files)
     version: int # Always 9, possibly a version of some sort used by the Anachronox team, and we would never see 1-8 in the released product, for example.
 
 
@@ -47,7 +48,7 @@ class anox_dat_file:
 
 
 
-
+dat_file_name = ""
 dat_file_dictionary = dict()
 
 
@@ -113,15 +114,19 @@ def write_file(dat_file_bytes, dat_file, output_folder, file_name):
                 
     this_file_bytes = dat_file_bytes[getattr(dat_file, 'start_position') : getattr(dat_file, 'start_position') + getattr(dat_file, 'length')]
 
-    output_path = os.path.join(output_folder, file_name)
+    global dat_file_name
+    # This will add the name of the dat file itself as a subdirectory.
+    # Judging from the models w/ a .atd file, and the paths they point to, I'm guessing this is convention, and it will allow parsing the .atd w/o extra work
+    print(f"output folder: {output_folder}")
+    output_path = os.path.join(output_folder, dat_file_name, file_name)
     output_path = ''.join(x for x in output_path if x.isprintable())
     
     output_directory = os.path.dirname(output_path)
+    
     if not os.path.exists(output_directory):
-        print("MAKING DIRECTORY!")
+        print(f"Making directory: {output_directory}")
         print(output_directory)
         os.makedirs(output_directory)
-
 
     output_file = open(output_path, 'wb')
     output_file.write(this_file_bytes)
@@ -134,15 +139,18 @@ def write_compressed_file(dat_file_bytes, dat_file, output_folder, file_name):
     
     decompressed_file = zlib.decompress(this_file_bytes)
 
-    output_path = os.path.join(output_folder, file_name)
+    global dat_file_name
+    # This will add the name of the dat file itself as a subdirectory.
+    # Judging from the models w/ a .atd file, and the paths they point to, I'm guessing this is convention, and it will allow parsing the .atd w/o extra work
+    print(f"output folder: {output_folder}")
+    output_path = os.path.join(output_folder, dat_file_name, file_name)
     output_path = ''.join(x for x in output_path if x.isprintable())
     
     output_directory = os.path.dirname(output_path)
     if not os.path.exists(output_directory):
-        print("MAKING DIRECTORY!")
+        print(f"Making directory: {output_directory}")
         print(output_directory)
         os.makedirs(output_directory)
-    
     
     output_file = open(output_path, 'wb')
     output_file.write(decompressed_file)
@@ -228,7 +236,10 @@ class AnachronoxDATApp(QWidget):
                 print("Invalid DAT, aborting...")
                 return
 
-            
+            global dat_file_name
+            dat_file_name = Path(file_name).stem.lower()
+            print(f"DAT FILENAME: {dat_file_name}")
+
             # Populate UI w/ file name
             self.ui.txt_dat_file.setText(file_name)
 
